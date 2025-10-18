@@ -1,0 +1,28 @@
+{
+  "lock": false,
+  "tasks": {
+    "build": "deno bundle ./src/background.ts -o dist/background.js --platform browser --minify",
+    "dev": "deno bundle ./src/background.ts -o dist/background.js --platform browser --watch",
+    "ok": "deno fmt --check"
+  },
+  "imports": {
+    "@types/chrome": "npm:@types/chrome@^0.1.24"
+  },
+  "fmt": {
+    "exclude": [
+      "dist"
+    ],
+    "lineWidth": 120,
+    "newLineKind": "system",
+    "quoteProps": "asNeeded",
+    "semiColons": false,
+    "singleQuote": true,
+    "spaceSurroundingProperties": false
+  },
+  "compilerOptions": {
+    "lib": [
+      "esnext",
+      "dom"
+    ]
+  }
+}

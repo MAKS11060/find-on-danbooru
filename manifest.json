@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/chrome-manifest",
+  "manifest_version": 3,
+  "name": "Find on Danbooru",
+  "version": "1.2",
+  "description": "Adds a context menu item to find the artist on Danbooru",
+  "icons": {
+    "128": "./src/icons/danbooru-logo.png"
+  },
+  "host_permissions": [
+    "https://x.com/*",
+    "https://danbooru.donmai.us/*",
+    "https://www.pixiv.net/*"
+  ],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "permissions": [
+    "contextMenus"
+  ]
+}
