@@ -55,4 +55,4 @@ jobs:
           tag_name: ${{ env.FINAL_TAG }}
           generate_release_notes: true
           files: |
-            dist
+            dist/**.zip
