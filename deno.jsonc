@@ -1,5 +1,5 @@
 {
-  "lock": false,
+  "lock": true,
   "tasks": {
     "build": "deno run -Aq scripts/build.ts",
     "dev": "deno bundle ./src/background.ts -o dist/background.js --platform browser --sourcemap --watch",
