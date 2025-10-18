@@ -55,9 +55,14 @@ const blob = await zipWriter.close()
 emptyDirSync('dist')
 Deno.writeFileSync('dist/build.zip', await blob.bytes())
 
+const sha256 = async (data: Uint8Array<ArrayBuffer>) => {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', data))
+}
+
 const compressionRatio = ((1 - compressedSize / uncompressedSize) * 100).toFixed(2)
 console.log({
   uncompressedSize: format(uncompressedSize),
   compressedSize: format(compressedSize),
   compressionRatio: `${compressionRatio}%`,
+  hash: (await sha256(await blob.bytes())).toHex(),
 })
