@@ -1,12 +1,16 @@
 {
   "lock": false,
   "tasks": {
-    "build": "deno bundle ./src/background.ts -o dist/background.js --platform browser --minify",
+    "build": "deno run -A scripts/build.ts",
     "dev": "deno bundle ./src/background.ts -o dist/background.js --platform browser --watch",
     "ok": "deno fmt --check"
   },
   "imports": {
-    "@types/chrome": "npm:@types/chrome@^0.1.24"
+    "@std/fmt": "jsr:@std/fmt@^1.0.8",
+    "@std/fs": "jsr:@std/fs@^1.0.19",
+    "@std/path": "jsr:@std/path@^1.1.2",
+    "@types/chrome": "npm:@types/chrome@^0.1.24",
+    "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.8.8"
   },
   "fmt": {
     "exclude": [
@@ -24,5 +28,8 @@
       "esnext",
       "dom"
     ]
-  }
+  },
+  "unstable": [
+    "bundle"
+  ]
 }
