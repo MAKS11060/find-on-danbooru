@@ -1,8 +1,8 @@
 {
   "lock": false,
   "tasks": {
-    "build": "deno run -A scripts/build.ts",
-    "dev": "deno bundle ./src/background.ts -o dist/background.js --platform browser --watch",
+    "build": "deno run -Aq scripts/build.ts",
+    "dev": "deno bundle ./src/background.ts -o dist/background.js --platform browser --sourcemap --watch",
     "ok": "deno fmt --check"
   },
   "imports": {
@@ -25,8 +25,8 @@
   },
   "compilerOptions": {
     "lib": [
-      "esnext",
-      "dom"
+      "dom",
+      "esnext"
     ]
   },
   "unstable": [

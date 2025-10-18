@@ -1,11 +1,11 @@
 interface SitePattern {
   patterns: URLPattern[]
   exclude?: URLPattern[]
-  resolve({pathname}: URLPatternResult, pattern: URLPattern): string | undefined
+  resolve?({pathname}: URLPatternResult, pattern: URLPattern): string | undefined
 }
 
 export const SITE_PATTERNS: SitePattern[] = [
-  { // X.com (Twitter)
+  { // x.com (Twitter)
     patterns: [
       new URLPattern({hostname: 'x.com', pathname: '/:username/*?'}),
       new URLPattern({hostname: 'twitter.com', pathname: '/:username/*?'}),
@@ -31,7 +31,7 @@ export const SITE_PATTERNS: SitePattern[] = [
       {pathname: {groups: {username}}},
     ) => `https://x.com/${username}`,
   },
-  { // Pixiv
+  { // pixiv
     patterns: [
       new URLPattern({hostname: 'www.pixiv.net', pathname: '/:lang/users/:userId'}),
     ],
@@ -39,7 +39,7 @@ export const SITE_PATTERNS: SitePattern[] = [
       {pathname: {groups: {userId}}},
     ) => `https://www.pixiv.net/en/users/${userId}`,
   },
-  { // Pixiv img
+  { // pixiv img
     patterns: [
       new URLPattern({hostname: 'www.pixiv.net', pathname: '/:lang/artworks/:postId'}),
     ],
@@ -48,12 +48,27 @@ export const SITE_PATTERNS: SitePattern[] = [
     ) => `https://www.pixiv.net/en/artworks/${postId}`,
   },
 
-  { // short url
+  { // fanbox
+    patterns: [
+      new URLPattern({hostname: ':username.fanbox.cc'}),
+    ],
+    resolve: (
+      {hostname: {groups: {username}}},
+    ) => `https://${username}.fanbox.cc`,
+  },
+
+  // Short Url
+  { // extract url
     patterns: [
       new URLPattern({hostname: 'www.pixiv.net', pathname: '/jump.php', search: 'url=:target'}),
     ],
     resolve: (
       {search: {groups: {target}}},
     ) => target && decodeURIComponent(target),
+  },
+  { // pass
+    patterns: [
+      new URLPattern({hostname: 't.co'}),
+    ],
   },
 ]
