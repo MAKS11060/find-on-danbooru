@@ -3,9 +3,9 @@
   "manifest_version": 3,
   "name": "Find on Danbooru",
   "version": "1.2",
-  "description": "Adds a context menu item to find the artist on Danbooru",
+  "description": "Adds a context menu item to search for images and artists on Danbooru",
   "icons": {
-    "128": "./src/icons/danbooru-logo.png"
+    "128": "src/icons/danbooru-logo.png"
   },
   "host_permissions": [
     "https://x.com/*",
