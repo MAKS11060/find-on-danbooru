@@ -35,7 +35,7 @@ for (const path of files) {
 const build = await Deno.bundle({
   entrypoints: ['src/background.ts'],
   outputPath: './dist/background.js',
-  minify: true,
+  // minify: true,
   write: false,
 })
 if (!build.success) throw console.error(build)

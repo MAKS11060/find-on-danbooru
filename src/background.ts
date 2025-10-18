@@ -1,38 +1,6 @@
 /// <reference types="@types/chrome" />
 
-interface SitePattern {
-  patterns: URLPattern[]
-  resolve({pathname}: URLPatternResult, pattern: URLPattern): string
-}
-
-// --- PATTERNS ---
-const SITE_PATTERNS: SitePattern[] = [
-  { // X.com (Twitter)
-    patterns: [
-      new URLPattern({hostname: 'x.com', pathname: '/:username/*'}),
-      new URLPattern({hostname: 'twitter.com', pathname: '/:username/*'}),
-    ],
-    resolve: (
-      {pathname: {groups: {username}}},
-    ) => `https://x.com/${username}`,
-  },
-  { // Pixiv
-    patterns: [
-      new URLPattern({hostname: 'www.pixiv.net', pathname: '/:lang/users/:userId'}),
-    ],
-    resolve: (
-      {pathname: {groups: {userId}}},
-    ) => `https://www.pixiv.net/en/users/${userId}`,
-  },
-  { // Pixiv img
-    patterns: [
-      new URLPattern({hostname: 'www.pixiv.net', pathname: '/:lang/artworks/:postId'}),
-    ],
-    resolve: (
-      {pathname: {groups: {postId}}},
-    ) => `https://www.pixiv.net/en/artworks/${postId}`,
-  },
-]
+import {SITE_PATTERNS} from './pattern.ts'
 
 // Function to normalize the URL based on the configured patterns
 function normalizeUrl(urlString: string) {
@@ -61,7 +29,13 @@ function normalizeUrl(urlString: string) {
 function isValidUrl(urlString: string) {
   try {
     const url = new URL(urlString)
-    for (const {patterns} of SITE_PATTERNS) {
+    for (const {patterns, exclude} of SITE_PATTERNS) {
+      for (const pattern of exclude ?? []) {
+        if (pattern.test(url)) {
+          return false
+        }
+      }
+
       for (const pattern of patterns) {
         if (pattern.test(url)) {
           return true
@@ -74,9 +48,15 @@ function isValidUrl(urlString: string) {
   }
 }
 
+const MenuItem = {
+  findArtistOnDanbooru: 'findArtistOnDanbooru',
+  findArtistByNameOnDanbooru: 'findArtistByNameOnDanbooru',
+  searchImageOnIQDB: 'searchImageOnIQDB',
+} as const
+
 // Listen for clicks on the context menu item
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'findArtistOnDanbooru') {
+  if (info.menuItemId === MenuItem.findArtistOnDanbooru) {
     // Determine the URL to use based on how the context menu was invoked
 
     let urlToUse: string | undefined
@@ -87,26 +67,42 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 
     if (info.mediaType === 'image') { //
-      urlToUse = info.frameUrl!
+      urlToUse = info.linkUrl
+      // urlToUse = info.frameUrl!
     }
+
+    console.log(info, isValidUrl(urlToUse!))
 
     // Validate the URL
-    if (urlToUse && isValidUrl(urlToUse)) {
-      // Normalize the URL
-      const normalizedUrl = normalizeUrl(urlToUse)
-
-      // Construct the Danbooru search URL
-      const uri = new URL('https://danbooru.donmai.us/artists')
-      uri.searchParams.set('commit', 'Search')
-      uri.searchParams.set('search[order]', 'created_at')
-      uri.searchParams.set('search[url_matches]', normalizedUrl)
-      chrome.tabs.create({url: uri.toString()})
-    } else {
+    if (!urlToUse || !isValidUrl(urlToUse)) {
       console.log('Invalid or unsupported URL detected for Danbooru search:', urlToUse, info)
+      return
     }
+
+    // Normalize the URL
+    const normalizedUrl = normalizeUrl(urlToUse)
+    if (!normalizedUrl) {
+      console.log('normalizeUrl failed', urlToUse)
+      return
+    }
+
+    // Construct the Danbooru search URL
+    const uri = new URL('https://danbooru.donmai.us/artists')
+    uri.searchParams.set('commit', 'Search')
+    uri.searchParams.set('search[order]', 'created_at')
+    uri.searchParams.set('search[url_matches]', normalizedUrl)
+    chrome.tabs.create({url: uri.toString()})
   }
 
-  if (info.menuItemId === 'searchImageOnIQDB') {
+  if (info.menuItemId === MenuItem.findArtistByNameOnDanbooru) {
+    const uri = new URL('https://danbooru.donmai.us/artists')
+    uri.searchParams.set('commit', 'Search')
+    uri.searchParams.set('search[order]', 'created_at')
+    uri.searchParams.set('search[any_name_matches]', String(info.selectionText))
+    chrome.tabs.create({url: uri.toString()})
+  }
+
+  if (info.menuItemId === MenuItem.searchImageOnIQDB) {
     const imageUrl = info.srcUrl
     if (imageUrl) {
       const uri = new URL('https://danbooru.donmai.us/iqdb_queries')
@@ -120,15 +116,23 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Create the context menu item (moved here for clarity, but placement doesn't strictly matter for this example)
 chrome.runtime.onInstalled.addListener(() => {
+  // Search Artist
   chrome.contextMenus.create({
-    id: 'findArtistOnDanbooru',
+    id: MenuItem.findArtistOnDanbooru,
     title: 'Find Artist',
-    contexts: ['page', 'selection', 'link'], // Show for page, selected text, or links
+    contexts: ['page', 'link'], // Show for page or links
+  })
+
+  // Search Artist by name
+  chrome.contextMenus.create({
+    id: MenuItem.findArtistByNameOnDanbooru,
+    title: 'Find Artist by name',
+    contexts: ['selection'], // Show for  selected text
   })
 
   // Search image
   chrome.contextMenus.create({
-    id: 'searchImageOnIQDB',
+    id: MenuItem.searchImageOnIQDB,
     title: 'Find Image',
     contexts: ['image'], // Show only when right-clicking an image
   })
